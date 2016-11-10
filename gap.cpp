@@ -77,7 +77,7 @@ inline int Gap::CntCapacity (int agt) {
 	int aux_agt = 0;
 	for (int tsk=0; tsk<aNumTasks; tsk++) {
 		aux_agt = apAssign[tsk];
-		if (aux_agt = agt) total += apCosts[aux_agt][tsk];
+		if (aux_agt == agt) total += apCosts[aux_agt][tsk];
 	}
 	return total;
 }
@@ -147,7 +147,7 @@ int** Gap::GetProfits () {
 inline void Gap::SetNumAgts (int numAgts) {
 	if (numAgts <= 0) {
 		cerr << "Invalid argument!" <<
-					" There must be a positive number of agents.";
+					" There must be a positive number of agents.\n";
 	} else {
 		aNumAgts = numAgts;
 	}
@@ -156,20 +156,27 @@ inline void Gap::SetNumAgts (int numAgts) {
 inline void Gap::SetNumTasks (int numTasks){
 	if (numTasks <= 0) {
 		cerr << "Invalid argument!" <<
-					"There must be a positive number of tasks.";
+					"There must be a positive number of tasks.\n";
 	} else aNumTasks = numTasks;
+}
+
+inline void Gap::SetMaxProfit (int maxProfit){
+	if (maxProfit < 0) {
+		cerr << "Invalid argument!" <<
+					" Can't have a negative solution.\n";
+	} else aMaxProfit = maxProfit;
 }
 
 inline void Gap::SetCosts (int **costs) {
 	if (costs == NULL) {
 		cerr << "Invalid argument!" <<
-					" Can't set the costs to NULL";
+					" Can't set the costs to NULL\n";
 	} else {
 		for (int agnt=0; agnt<aNumAgts; agnt++) {
 			for (int tsk=0; tsk<aNumTasks; tsk++) {
 				if (apProfits[agnt][tsk] < 0) {
 					cerr << "Invalid argument!" <<
-								" Can't set negative costs.";
+								" Can't set negative costs.\n";
 					return;
 				}
 				apCosts[agnt][tsk] = costs[agnt][tsk];
@@ -182,13 +189,13 @@ inline void Gap::SetCosts (int **costs) {
 inline void Gap::SetProfits (int **profits) {
 	if (profits == NULL) {
 		cerr << "Invalid argument!" <<
-					" Can't set the profits to NULL";
+					" Can't set the profits to NULL\n";
 	} else {
 		for (int agnt=0; agnt<aNumAgts; agnt++) {
 			for (int tsk=0; tsk<aNumTasks; tsk++) {
 				if (profits[agnt][tsk] < 0) {
 					cerr << "Invalid argument!" <<
-								" Can't set negative profits.";
+								" Can't set negative profits.\n";
 					return;
 				}
 				profits[agnt][tsk] = apProfits[agnt][tsk];
@@ -196,18 +203,113 @@ inline void Gap::SetProfits (int **profits) {
 		}
 	}
 }
+
 inline void Gap::SetCapacity (int *caps) {
 	if (caps == NULL) {
 		cerr << "Invalid argument!" <<
-					" Can't set the capcities to NULL";
+					" Can't set the capcities to NULL\n";
 	} else {
 		for (int agnt=0; agnt<aNumAgts; agnt++) {
 			if (caps[agnt] < 0) {
 				cerr << "Invalid argument!" <<
-							" Can't set negative capacities.";
+							" Can't set negative capacities.\n";
 				return;
 			}
 			apCapacity[agnt] = caps[agnt];
 		}
 	}
 }
+
+void Gap::SetAssign (int *assign) {
+	if(assign == NULL) {
+		cerr << "Invalid argument!" <<
+					" Can't set the capcities to NULL\n";
+	} else {
+		for (int tsk=0; tsk<aNumTasks; tsk++) {
+			if(assign[tsk] < 0 || assign[tsk] >= aNumAgts) {
+				cerr << "Invalid assignment!\n";
+				return;
+			}
+		}
+		apAssign = assign;
+	}
+}
+
+int Gap::AssignCost (int agnt, int task) {
+	if (task < 0 || task > aNumTasks) {
+		cerr << "Invalid task number!\n";
+	} else if (agnt < 0 || agnt > aNumAgts) {
+		cerr << "Invalid agent number!\n";
+	} else  return apCosts[agnt][task];
+	return 1;
+}
+
+int Gap::AgentCapacity (int agnt) {
+	if (agnt < 0 || agnt > aNumAgts) {
+		cerr << "Invalid agent number!\n";
+	} else  return apCapacity[agnt];
+	return 1;
+}
+
+bool Gap::Allocate (int agnt, int task) {
+	if (task < 0 || task > aNumTasks) {
+		cerr << "Invalid task number!\n";
+		return false;
+	} else if (agnt < 0 || agnt > aNumAgts) {
+		cerr << "Invalid agent number!\n";
+		return false;
+	} else if (CntCapacity(agnt) + AssignCost(agnt, task) 
+										> AgentCapacity(agnt)) {
+		cerr << "Agent can't exceed its capacity!\n";
+		return false;
+	} else {
+		apAssign[task] = agnt;
+		return true;
+	}
+	return false;
+}
+
+int* Gap::GreedyRandomizedConstruction (int seed) {
+	return NULL;
+}
+
+int* Gap::LocalSearch (int *assignment) {
+	return NULL;
+}
+
+int Gap::Grasp(int maxIteration, int seed){
+	for (int cnt_it=0; cnt_it < maxIteration; cnt_it++) {
+		apAssign = GreedyRandomizedConstruction(seed);
+		apAssign = LocalSearch(apAssign);
+		if(TotalProfit() > aMaxProfit) SetMaxProfit(TotalProfit());
+	}
+	return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
