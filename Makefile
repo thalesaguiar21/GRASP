@@ -1,4 +1,4 @@
-all:
-	g++ ReaderWriter.cpp GenAssign.cpp main.cpp -o gap
+gap:
+	g++ ReaderWriter.cpp gap.cpp -o gap
 run:
 	./gap
