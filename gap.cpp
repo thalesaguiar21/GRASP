@@ -269,6 +269,11 @@ bool Gap::Allocate (int agnt, int task) {
 	return false;
 }
 
+
+// float Gap::Alpha (int pMin, int pMax) {
+
+// }
+
 int* Gap::GreedyRandomizedConstruction (int seed) {
 	return NULL;
 }
