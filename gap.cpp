@@ -8,6 +8,7 @@ using std::cout;
 using std::cin;
 using std::endl;
 using std::cerr;
+using std::string;
 
 Gap::Gap () {
 	aNumAgts        = 0;
@@ -34,21 +35,32 @@ Gap::~Gap () {
 	delete[] apAssign;
 }
 
-inline int Gap::Open () { return FAIL; }
-
-void Gap::ReadInput (const char *fileName) {
-	apCosts = readResource<int> (fileName, aNumAgts, aNumTasks);
-	apProfits = readCost<int> (fileName, aNumAgts, aNumTasks);
-	apCapacity = readAgentsCap<int> (fileName, aNumAgts, aNumTasks);
-	if (!apCosts || !apProfits || !apCapacity) {
-		cerr << "Could not read the file!\n";
-		delete this;
-		exit(1);
-	} else{
+inline int Gap::Open () { 
+	int FAIL = 0;
+	FAIL = ReadInput();
+	if (0 == FAIL) {
 		for (int tsk=0; tsk<aNumTasks; tsk++) {
 			apAssign[tsk] = -1;
 		}
 	}
+	return FAIL; 
+}
+
+int Gap::ReadInput () {
+	const char *file   = NULL;
+	string file_name   = "";
+
+	cout << "Type in the file name: ";
+	cin >> file_name;
+	file = file_name.c_str();
+
+	apCosts = readResource<int> (file, aNumAgts, aNumTasks);
+	apProfits = readCost<int> (file, aNumAgts, aNumTasks);
+	apCapacity = readAgentsCap<int> (file, aNumAgts, aNumTasks);
+	if (!apCosts || !apProfits || !apCapacity) {
+		cerr << "Could not read the file!\n";
+		return 1;
+	} else return 0;
 }
 
 inline int Gap::TotalProfit () {

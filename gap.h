@@ -37,7 +37,7 @@ private:
 
 	int  *apAssign;
 
-	void   ReadInput (const char *fileName);
+	int    ReadInput ();
 	int    TotalProfit ();
 	int    CntCapacity (int agt);
 };
