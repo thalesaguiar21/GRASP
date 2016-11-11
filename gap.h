@@ -13,7 +13,7 @@ public:
 	int    CntCapacity (int agt);
 	int    AssignCost (int agnt, int task);
 	int    Grasp (int maxIteration, int seed);
-	int*   GreedyRandomizedConstruction (int seed);
+	int*   GreedyRandomizedConstruction (float alpha, int seed);
 	int*   LocalSearch (int *assignment);
 	void   UpdateSolution (int localSolution, int bestSolution);
 	int    AgentCapacity (int agnt);
@@ -48,6 +48,7 @@ private:
 
 	int    ReadInput ();
 	int    TotalProfit ();
+	bool   IsASolution (int *assignment);
 };
 
 #endif

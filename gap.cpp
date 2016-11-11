@@ -270,11 +270,31 @@ bool Gap::Allocate (int agnt, int task) {
 }
 
 
-// float Gap::Alpha (int pMin, int pMax) {
+bool Gap::IsASolution (int *assignment) {
+	for (int task=0; task<aNumTasks; task++) {
+		if (assignment[task] == -1)	return false;
+	}
+	for (int agnt=0; agnt<aNumAgts; agnt++) {
+		if (CntCapacity(agnt) > apCapacity[agnt]) return false;
+	}
+	return true;
+}
 
-// }
+int* Gap::GreedyRandomizedConstruction (float alpha, int seed) {
+	int *lrc = new int[aNumTasks];
+	// Inicializa a lista de candidatos
+	// Avaliação de custos dos elementos
+	while (!IsASolution(apAssign)) {
+		// lucro máximo
+		// menor entre os lucros máximos
+		// Atribui a LRC todos os elementos 'e' 
+		// com custo(e) <= cmin + alpha * (cmax-cmin)
+		// Selecão aleatória de LRC
+		// Atualiza solução
+		// Atualiza a lista de candidatos
+		// reavalia a os custos incrementais 
 
-int* Gap::GreedyRandomizedConstruction (int seed) {
+	}
 	return NULL;
 }
 
@@ -284,7 +304,7 @@ int* Gap::LocalSearch (int *assignment) {
 
 int Gap::Grasp(int maxIteration, int seed){
 	for (int cnt_it=0; cnt_it < maxIteration; cnt_it++) {
-		apAssign = GreedyRandomizedConstruction(seed);
+		apAssign = GreedyRandomizedConstruction(0.1, seed);
 		apAssign = LocalSearch(apAssign);
 		if(TotalProfit() > aMaxProfit) SetMaxProfit(TotalProfit());
 	}
