@@ -1,6 +1,9 @@
 #ifndef GAP_H
 #define GAP_H
 
+#include <vector>
+
+using std::vector;
 
 class Gap{
 
@@ -17,7 +20,8 @@ public:
 	int*   LocalSearch (int *assignment);
 	void   UpdateSolution (int localSolution, int bestSolution);
 	int    AgentCapacity (int agnt);
-	int*   GetCandidates (int task);
+	vector<int> GetCandidates (int task);
+	int    TotalProfit ();
 	void   ShowAssign ();
 
 	int    GetNumAgts ();
@@ -48,7 +52,6 @@ private:
 	int  *apAssign;
 
 	int    ReadInput ();
-	int    TotalProfit ();
 	bool   IsASolution (int *assignment);
 };
 
