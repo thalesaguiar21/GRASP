@@ -17,6 +17,7 @@ public:
 	int*   LocalSearch (int *assignment);
 	void   UpdateSolution (int localSolution, int bestSolution);
 	int    AgentCapacity (int agnt);
+	int*   GetCandidates (int task);
 	void   ShowAssign ();
 
 	int    GetNumAgts ();

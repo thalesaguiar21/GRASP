@@ -262,11 +262,7 @@ bool Gap::Allocate (int agnt, int task) {
 										> AgentCapacity(agnt)) {
 		cerr << "Agent can't exceed its capacity!\n";
 		return false;
-	} else {
-		apAssign[task] = agnt;
-		return true;
-	}
-	return false;
+	} else 	return true;
 }
 
 
@@ -278,6 +274,14 @@ bool Gap::IsASolution (int *assignment) {
 		if (CntCapacity(agnt) > apCapacity[agnt]) return false;
 	}
 	return true;
+}
+
+int* Gap::GetCandidates (int task) {
+	int *candidates = new int[aNumAgts];
+	for (int agnt=0; agnt<aNumAgts; agnt++) {
+		if(Allocate(agnt, task)) candidates[]
+	}
+	return NULL; 
 }
 
 int* Gap::GreedyRandomizedConstruction (float alpha, int seed) {
@@ -295,6 +299,7 @@ int* Gap::GreedyRandomizedConstruction (float alpha, int seed) {
 		// reavalia a os custos incrementais 
 
 	}
+	delete[] lrc;
 	return NULL;
 }
 
