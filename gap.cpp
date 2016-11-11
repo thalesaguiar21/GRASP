@@ -3,6 +3,7 @@
 #include <iostream>
 #include <iomanip>
 #include <cstdlib>
+#include <ctime>
 #include <vector>
 
 using std::cout;
@@ -258,13 +259,13 @@ int Gap::AgentCapacity (int agnt) {
 
 bool Gap::Allocate (int agnt, int task) {
 	if (task < 0 || task > aNumTasks) {
-		cerr << "Invalid task number!\n";
+		//cerr << "Invalid task number!\n";
 		return false;
 	} else if (agnt < 0 || agnt > aNumAgts) {
-		cerr << "Invalid agent number!\n";
+		//cerr << "Invalid agent number!\n";
 		return false;
 	} else if (CntCapacity(agnt) + apCosts[agnt][task] > apCapacity[agnt]) {
-		cerr << "Agent" << agnt << " can't exceed its capacity!\n";
+		//cerr << "Agent " << agnt+1 << " can't exceed its capacity!\n";
 		return false;
 	} else 	return true;
 }
@@ -280,7 +281,7 @@ bool Gap::IsASolution (int *assignment) {
 	return true;
 }
 
-std::vector<int> Gap::GetCandidates (int task) {
+vector<int> Gap::GetCandidates (int task) {
 	vector<int> candidates;
 	for (int agnt=0; agnt<aNumAgts; agnt++) {
 		if(Allocate(agnt, task)) candidates.push_back(agnt);
@@ -288,72 +289,74 @@ std::vector<int> Gap::GetCandidates (int task) {
 	return candidates; 
 }
 
+vector<float> Gap::EvaluateCandidates (int task, vector<int> cand) {
+	vector<float> values;
+	int tot   = TotalProfit();
+	float val = 0;
+	for (int i=0; i < cand.size(); i++) {
+		values.push_back(apProfits[cand[i]][task]);
+	}
+	return values; 
+}
+
+void Gap::ResetAssignments () {
+	for (int tsk=0; tsk<aNumTasks; tsk++) {
+			apAssign[tsk] = -1;
+	}
+}
+
 int* Gap::GreedyRandomizedConstruction (float alpha, int seed) {
 	vector<int> lrc;
+	vector<int> cdt;
 	bool proceed     = true;
 	int sel          = 0;
 	int task         = 0;
-	int threshold    = 0;
+	float threshold  = 0;
 	int c_min        = 0;
 	int c_max        = 0;
-	vector<int> cdt  = GetCandidates(0);
-
-	cout << "\n\n";
-	printMat<int> (apProfits, aNumAgts, aNumTasks);
+	srand(seed);
+	cout << "Building a solution...\n";
 	// Avaliação de custos dos elementos
-	while (proceed) {
-		// Calculating maximum and minimum costs
-		c_min = apProfits[cdt[0]][task];
-		c_max = apProfits[cdt[0]][task];
-		for (int e=1; e<cdt.size(); e++) {
-			if (apProfits[cdt[e]][task] < c_min) {
-				c_min = apProfits[cdt[e]][task];
+	while (!IsASolution(apAssign)) {
+		task = 0;
+		ResetAssignments();
+		cdt = GetCandidates(0);
+		while (cdt.size() > 0 && task < aNumTasks) {
+			// Calculating maximum and minimum costs
+			c_min = apProfits[0][task];
+			c_max = apProfits[0][task];
+			for (int i=1; i<cdt.size(); i++) {
+				if (apProfits[cdt[i]][task] < c_min) {
+					c_min = apProfits[cdt[i]][task];
+				}
+				if (apProfits[cdt[i]][task] > c_max) {
+					c_max = apProfits[cdt[i]][task];
+				} 
 			}
-			if (apProfits[cdt[e]][task] > c_max) {
-				c_max = apProfits[cdt[e]][task];
-			} 
-		}
-
-		cout << "Cdt: ";
-		for (int i=0; i < cdt.size(); i++) {
-			cout << cdt[i] << " ";
-		}
-		cout << endl;
-		cout << "Cmin: " << c_min << endl;
-		cout << "Cmax: " << c_max << endl;
-		// Add all candidates that are subject to
-		// cost(e) in [c_min, c_min + alpha*(c_max - c_min)]
-		for (int e=0; e<cdt.size(); e++) {
+			// Calculating the threshold
 			threshold = c_min + alpha*(c_max - c_min);
-			if (apProfits[cdt[e]][task] >= c_min 
-					&& apProfits[cdt[e]][task] <= threshold) {
-				lrc.push_back(cdt[e]);
-				cout << "Added element " << cdt[e] << " to LRC\n";
+			// Add all candidates that are subject to
+			// inc_val(e) >= threshold
+			for (int e=0; e<cdt.size(); e++) {
+				if (apProfits[cdt[e]][task] >= threshold) {
+					lrc.push_back(cdt[e]);
+				}
 			}
-		}
-		// Select a pseudo-random element form LRC
-		if (lrc.size() > 0) {
-			srand(seed);
+			// Select a pseudo-random element form LRC
+			if(0 == lrc.size()) break;
  			sel = rand() % lrc.size();
 			if (sel < 0) sel = (-1)*sel;
 			// Update solution
-			cout << "Added element " << lrc[sel] << " to solution\n";
-			apAssign[task] = lrc[sel];		
-		} else cout << "Empty restricted candidate list!\n";
-		if (0 == cdt.size() && !IsASolution(apAssign)) {
-			task--;
-		} else if (task + 1 == aNumTasks) proceed = false;
-		else task++;
-		// Update candidate list
-		cdt.clear();
-		lrc.clear();
-		cdt = GetCandidates(task);
-		ShowAssign();
-		cout << "\n";
-	}
-	for (int i=0; i<aNumAgts; i++) 
-		cout << CntCapacity(i) << " ";
-	cout << "\n\n";
+			apAssign[task] = lrc[sel];
+			// Update candidate list
+			task++;
+			cdt.clear();
+			lrc.clear();
+			cdt = GetCandidates(task);
+			ShowAssign();
+			cout << "\n";
+		}
+	}	
 	return apAssign;
 }
 
@@ -363,7 +366,7 @@ int* Gap::LocalSearch (int *assignment) {
 
 int Gap::Grasp(int maxIteration, int seed){
 	for (int cnt_it=0; cnt_it < maxIteration; cnt_it++) {
-		apAssign = GreedyRandomizedConstruction(0.1, seed);
+		apAssign = GreedyRandomizedConstruction(0.5, seed);
 		apAssign = LocalSearch(apAssign);
 		if(TotalProfit() > aMaxProfit) SetMaxProfit(TotalProfit());
 	}

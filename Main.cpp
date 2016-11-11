@@ -13,7 +13,7 @@ int main () {
 	if (0 != gap->Open()) exit(1);
 
 	cout << "\nAgents: " << gap->GetNumAgts() << endl;
-	cout << "\nTarefas: " << gap->GetNumTasks() << endl;
+	cout << "\nTasks: " << gap->GetNumTasks() << endl;
 	cout << "\nCosts: \n";
 	printMat<int>(gap->GetCosts(), gap->GetNumAgts(), gap->GetNumTasks());
 	cout << "\nProfits: \n";
@@ -25,7 +25,7 @@ int main () {
 	}
 	cout << "\n\n";
 
-	gap->GreedyRandomizedConstruction (0.3, std::time(0));
+	gap->GreedyRandomizedConstruction (0.5, std::time(0));
 	cout << "Total: " << gap->TotalProfit() << endl;
 
 	delete gap;
