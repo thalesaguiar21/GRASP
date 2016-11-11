@@ -308,7 +308,6 @@ void Gap::ResetAssignments () {
 int* Gap::GreedyRandomizedConstruction (float alpha, int seed) {
 	vector<int> lrc;
 	vector<int> cdt;
-	bool proceed     = true;
 	int sel          = 0;
 	int task         = 0;
 	float threshold  = 0;
