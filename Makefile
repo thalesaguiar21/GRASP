@@ -1,6 +1,6 @@
 all:
-	g++ ReaderWriter.cpp gap.cpp Main.cpp -o gap
+	g++ ReaderWriter.cpp gap.cpp Main.cpp -o grasp
 run:
-	./gap
+	./grasp
 clean:
-	rm gap
+	rm grasp

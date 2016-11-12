@@ -366,47 +366,23 @@ int* Gap::GreedyRandomizedConstruction (float alpha, int seed) {
 
 vector<int*> Gap::Neighbor (int *assignment, int task) {
 	srand(std::time(NULL));
-	
 	vector<int*> neighbor;
 	vector<int> candidates;
-	int tsk = 0;
-	int opt1 = 0;
+	int opt1 = assignment[task] ;
+	assignment[task] = -1;
 
-	for (int i=0; i<aNumTasks; i++) {
-		tsk         = i;
-		cout << "Neighbor for task " << tsk << endl;
-		opt1        = assignment[tsk];
-		assignment[tsk] = -1;
-		cout << "Candidates: \n";
-
-		for (int agnt=0; agnt<aNumAgts; agnt++) {
-			if (Allocate(agnt, tsk) && agnt != opt1) {
-				candidates.push_back(agnt);
-			}
+	for (int agnt=0; agnt<aNumAgts; agnt++) {
+		if (Allocate(agnt, task) && agnt != opt1) {
+			candidates.push_back(agnt);
 		}
-		if (candidates.size() > 0) {
-			for (int i=0; i<candidates.size(); i++) {
-				cout << candidates[i] << " ";
-			}
-			cout << "\n";
-		}
-		candidates.clear();
 	}
-	
 	
 	for (int i=0; i<candidates.size(); i++) {
 		neighbor.push_back(GetAssign());
-		neighbor[i][tsk] = candidates[i];
+		neighbor[i][task] = candidates[i];
 	}
 
-	assignment[tsk] = opt1;
-	cout << "Neighbors: \n";
-	for (int i=0; i<neighbor.size(); i++) {
-		for (int j=0; j<aNumTasks; j++) {
-			cout << std::setfill(' ') << std::setw(3) << neighbor[i][j];
-		}
-		cout << "\n";
-	}
+	assignment[task] = opt1;
 	return neighbor;
 }
 
@@ -427,31 +403,3 @@ int Gap::Grasp(int maxIteration, int seed){
 	}
 	return 0;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
