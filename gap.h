@@ -19,12 +19,14 @@ public:
 	vector<float> EvaluateCandidates (int task, vector<int> cand);
 	int           Grasp (int maxIteration, int seed);
 	int*          GreedyRandomizedConstruction (float alpha, int seed);
-	int*          LocalSearch (int *assignment);
 	void          UpdateSolution (int localSolution, int bestSolution);
 	int           AgentCapacity (int agnt);
 	vector<int>   GetCandidates (int task);
 	int           TotalProfit ();
+	int           TotalProfit (int *assignment);
 	void          ShowAssign ();
+	int*          LocalSearch (int *assignment);
+	vector<int*>  Neighbor (int *assignment, int task);
 
 	int    GetNumAgts ();
 	int    GetNumTasks ();

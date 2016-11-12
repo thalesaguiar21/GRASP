@@ -16,7 +16,7 @@ template<typename T> void printMat(T **matriz, int linha, int coluna){
 
 	for(int i=0; i<linha; i++){
 		for(int j=0; j<coluna; j++){
-			cout << std::setfill(' ') << std::setw(4) << matriz[i][j];
+			cout << std::setfill(' ') << std::setw(3) << matriz[i][j];
 		}
 		cout << "\n";
 	}

@@ -1,5 +1,6 @@
 #include <iostream>
 #include <stdlib.h>
+#include <iomanip>
 #include <ctime>
 #include "gap.h"
 #include "ReaderWriter.h"
@@ -21,12 +22,14 @@ int main () {
 	cout << "\nAgents capacity:\n";
 	int *aux = gap->GetCapacities();
 	for(int i=0; i<gap->GetNumAgts(); i++){
-		cout << aux[i] << " ";
+		cout << std::setfill(' ') << std::setw(3) << aux[i];
 	}
 	cout << "\n\n";
 
 	gap->GreedyRandomizedConstruction (0.5, std::time(0));
-	cout << "Total: " << gap->TotalProfit() << endl;
+	cout << "Best profit: " << gap->TotalProfit() << endl;
+	gap->Neighbor(gap->GetAssign(), 3);
+	gap->ShowAssign();
 
 	delete gap;
 	delete[] aux;
