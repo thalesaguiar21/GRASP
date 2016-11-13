@@ -12,21 +12,13 @@ public:
 	Gap ();
 	~Gap ();
 	int           Open();
-	bool          Allocate (int agnt, int task);
-	int           CntCapacity (int agt);
-	int           AssignCost (int agnt, int task);
-	void          ResetAssignments ();
-	vector<float> EvaluateCandidates (int task, vector<int> cand);
 	int           Grasp (int maxIteration, int seed);
-	int*          GreedyRandomizedConstruction (float alpha, int seed);
-	void          UpdateSolution (int localSolution, int bestSolution);
-	int           AgentCapacity (int agnt);
-	vector<int>   GetCandidates (int task);
+	int*          GreedyRandomizedConstruction (float alpha, int seed);	
+	void          LocalSearch ();
+	vector<int*>  Neighbor (int task);
+	void          ShowAssign ();
 	int           TotalProfit ();
 	int           TotalProfit (int *assignment);
-	void          ShowAssign ();
-	int*          LocalSearch (int *assignment);
-	vector<int*>  Neighbor (int *assignment, int task);
 
 	int    GetNumAgts ();
 	int    GetNumTasks ();
@@ -55,8 +47,13 @@ private:
 	int  *apCapacity;
 	int  *apAssign;
 
-	int    ReadInput ();
-	bool   IsASolution (int *assignment);
+	int           ReadInput ();
+	bool          IsASolution (int *assignment);
+	vector<int>   FindCandidates (int task);
+	int           AgentCapacity (int agnt);
+	bool          Allocate (int agnt, int task);
+	int           CntCapacity (int agt);
+	void          ResetAssignments ();
 };
 
 #endif

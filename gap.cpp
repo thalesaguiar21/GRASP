@@ -52,30 +52,17 @@ int Gap::Open () {
 	return FAIL; 
 }
 
-int Gap::ReadInput () {
-	const char *file   = NULL;
-	string file_name   = "";
-
-	cout << "Type in the file name: ";
-	cin >> file_name;
-	file = file_name.c_str();
-
-	apCosts = readResource<int> (file, aNumAgts, aNumTasks);
-	apProfits = readCost<int> (file, aNumAgts, aNumTasks);
-	apCapacity = readAgentsCap<int> (file, aNumAgts, aNumTasks);
-	if (!apCosts || !apProfits || !apCapacity) {
-		cerr << "Could not read the file!\n";
-		return 1;
-	} else return 0;
-}
-
-int Gap::TotalProfit () {
-	int total = 0;
-	for(int tsk=0; tsk<aNumTasks; tsk++){
-		if(apAssign[tsk] != -1)
-			total += apProfits[apAssign[tsk]][tsk];
-	}
-	return total;
+bool Gap::Allocate (int agnt, int task) {
+	if (task < 0 || task > aNumTasks) {
+		//cerr << "Invalid task number!\n";
+		return false;
+	} else if (agnt < 0 || agnt > aNumAgts) {
+		//cerr << "Invalid agent number!\n";
+		return false;
+	} else if (CntCapacity(agnt) + apCosts[agnt][task] > apCapacity[agnt]) {
+		//cerr << "Agent " << agnt+1 << " can't exceed its capacity!\n";
+		return false;
+	} else 	return true;
 }
 
 int Gap::CntCapacity (int agt) {
@@ -88,12 +75,170 @@ int Gap::CntCapacity (int agt) {
 	return total;
 }
 
+void Gap::ResetAssignments () {
+	for (int tsk=0; tsk<aNumTasks; tsk++) {
+			apAssign[tsk] = -1;
+	}
+}
+
+int Gap::Grasp(int maxIteration, int seed){
+	int *best_assign = NULL;
+	int best_profit = 0;
+
+	for (int cnt_it=0; cnt_it < maxIteration; cnt_it++) {
+		apAssign = GreedyRandomizedConstruction(0.5, seed);
+		LocalSearch();
+		int profit_aux = TotalProfit();
+		if(profit_aux > best_profit) {
+			best_profit = profit_aux;
+			best_assign = GetAssign();
+		}
+	}
+	cout << "(";
+	for (int task=0; task<aNumTasks; task++) {
+		cout << best_assign[task] << ( (task == (aNumTasks-1) ) ? "":", " );
+	}
+	cout << ")\n";
+	cout <<  TotalProfit(best_assign);
+	cout << "\n";
+	return 0;
+}
+
+int* Gap::GreedyRandomizedConstruction (float alpha, int seed) {
+	vector<int> lrc;
+	vector<int> cdt;
+	int sel          = 0;
+	int task         = 0;
+	float threshold  = 0;
+	int c_min        = 0;
+	int c_max        = 0;
+	srand(seed);
+	//cout << "Construction fase...\n";
+	while (!IsASolution(apAssign)) {
+		task = 0;
+		ResetAssignments();
+		cdt = FindCandidates(0);
+		while (cdt.size() > 0 && task < aNumTasks) {
+			// Calculating maximum and minimum costs
+			c_min = apProfits[0][task];
+			c_max = apProfits[0][task];
+			for (int i=1; i<cdt.size(); i++) {
+				if (apProfits[cdt[i]][task] < c_min) {
+					c_min = apProfits[cdt[i]][task];
+				}
+				if (apProfits[cdt[i]][task] > c_max) {
+					c_max = apProfits[cdt[i]][task];
+				} 
+			}
+			// Calculating the threshold
+			threshold = c_min + alpha*(c_max - c_min);
+			// Add all candidates that are subject to
+			// inc_val(e) >= threshold
+			for (int e=0; e<cdt.size(); e++) {
+				if (apProfits[cdt[e]][task] >= threshold) {
+					lrc.push_back(cdt[e]);
+				}
+			}
+			// Select a pseudo-random element form LRC
+			if(0 == lrc.size()) break;
+ 			sel = rand() % lrc.size();
+			if (sel < 0) sel = (-1)*sel;
+			// Update solution
+			apAssign[task] = lrc[sel];
+			// Update candidate list
+			task++;
+			cdt.clear();
+			lrc.clear();
+			cdt = FindCandidates(task);
+		}
+	}
+	return apAssign;
+}
+
+vector<int> Gap::FindCandidates (int task) {
+	vector<int> candidates;
+	for (int agnt=0; agnt<aNumAgts; agnt++) {
+		if(Allocate(agnt, task)) candidates.push_back(agnt);
+	}
+	return candidates; 
+}
+
+int Gap::AgentCapacity (int agnt) {
+	if (agnt < 0 || agnt > aNumAgts) {
+		cerr << "Invalid agent number!\n";
+	} else  return apCapacity[agnt];
+	return 1;
+}
+
+void Gap::LocalSearch () {
+	vector<int*> neighbors;
+	//cout << "Search fase...\n";
+	for (int tsk=0; tsk<aNumTasks; tsk++) {
+		neighbors = Neighbor(tsk);
+		for (int i=0; i<neighbors.size(); i++) {
+			int neighSol = TotalProfit(neighbors[i]);
+			if (neighSol > TotalProfit()) {
+				for (int j=0; j<aNumTasks; j++) {
+					apAssign[j] = neighbors[i][j];
+				}
+			}
+		}
+
+		for (int i=0; i<neighbors.size(); i++) {
+			delete[] neighbors[i];
+		}
+		neighbors.clear();
+	}
+	return;
+}
+
+vector<int*> Gap::Neighbor (int task) {
+	srand(std::time(NULL));
+	vector<int*> neighbor;
+	vector<int> candidates;
+	int opt1 = apAssign[task] ;
+	apAssign[task] = -1;
+
+	for (int agnt=0; agnt<aNumAgts; agnt++) {
+		if (Allocate(agnt, task) && agnt != opt1) {
+			candidates.push_back(agnt);
+		}
+	}
+	
+	for (int i=0; i<candidates.size(); i++) {
+		neighbor.push_back(GetAssign());
+		neighbor[i][task] = candidates[i];
+	}
+
+	apAssign[task] = opt1;
+	return neighbor;
+}
+
 void Gap::ShowAssign () {
 	cout << "(";
 	for (int task=0; task<aNumTasks; task++) {
 		cout << apAssign[task] << ( (task == (aNumTasks-1) ) ? "":", " );
 	}
 	cout << ")\n";
+}
+
+int Gap::TotalProfit () {
+	int total = 0;
+	for(int tsk=0; tsk<aNumTasks; tsk++){
+		if(apAssign[tsk] != -1)
+			total += apProfits[apAssign[tsk]][tsk];
+	}
+	return total;
+}
+
+int Gap::TotalProfit (int *assignment) {
+	int total = 0;
+	for (int tsk=0; tsk<aNumTasks; tsk++) {
+		if (assignment[tsk] != -1) {
+			total += apProfits[assignment[tsk]][tsk];
+		}
+	}
+	return total;
 }
 
 int Gap::GetNumAgts () {
@@ -189,7 +334,6 @@ void Gap::SetCosts (int **costs) {
 			}
 		}
 	}
-	
 }
 
 void Gap::SetProfits (int **profits) {
@@ -241,36 +385,6 @@ void Gap::SetAssign (int *assign) {
 	}
 }
 
-int Gap::AssignCost (int agnt, int task) {
-	if (task < 0 || task > aNumTasks) {
-		cerr << "Invalid task number!\n";
-	} else if (agnt < 0 || agnt > aNumAgts) {
-		cerr << "Invalid agent number!\n";
-	} else  return apCosts[agnt][task];
-	return 1;
-}
-
-int Gap::AgentCapacity (int agnt) {
-	if (agnt < 0 || agnt > aNumAgts) {
-		cerr << "Invalid agent number!\n";
-	} else  return apCapacity[agnt];
-	return 1;
-}
-
-bool Gap::Allocate (int agnt, int task) {
-	if (task < 0 || task > aNumTasks) {
-		//cerr << "Invalid task number!\n";
-		return false;
-	} else if (agnt < 0 || agnt > aNumAgts) {
-		//cerr << "Invalid agent number!\n";
-		return false;
-	} else if (CntCapacity(agnt) + apCosts[agnt][task] > apCapacity[agnt]) {
-		//cerr << "Agent " << agnt+1 << " can't exceed its capacity!\n";
-		return false;
-	} else 	return true;
-}
-
-
 bool Gap::IsASolution (int *assignment) {
 	for (int task=0; task<aNumTasks; task++) {
 		if(apAssign[task] == -1) return false;
@@ -281,125 +395,19 @@ bool Gap::IsASolution (int *assignment) {
 	return true;
 }
 
-vector<int> Gap::GetCandidates (int task) {
-	vector<int> candidates;
-	for (int agnt=0; agnt<aNumAgts; agnt++) {
-		if(Allocate(agnt, task)) candidates.push_back(agnt);
-	}
-	return candidates; 
-}
+int Gap::ReadInput () {
+	const char *file   = NULL;
+	string file_name   = "";
 
-vector<float> Gap::EvaluateCandidates (int task, vector<int> cand) {
-	vector<float> values;
-	int tot   = TotalProfit();
-	float val = 0;
-	for (int i=0; i < cand.size(); i++) {
-		values.push_back(apProfits[cand[i]][task]);
-	}
-	return values; 
-}
+	cout << "Type in the file name: ";
+	cin >> file_name;
+	file = file_name.c_str();
 
-void Gap::ResetAssignments () {
-	for (int tsk=0; tsk<aNumTasks; tsk++) {
-			apAssign[tsk] = -1;
-	}
-}
-
-int* Gap::GreedyRandomizedConstruction (float alpha, int seed) {
-	vector<int> lrc;
-	vector<int> cdt;
-	int sel          = 0;
-	int task         = 0;
-	float threshold  = 0;
-	int c_min        = 0;
-	int c_max        = 0;
-	srand(seed);
-	cout << "Building a solution...\n";
-	// Avaliação de custos dos elementos
-	while (!IsASolution(apAssign)) {
-		task = 0;
-		ResetAssignments();
-		cdt = GetCandidates(0);
-		while (cdt.size() > 0 && task < aNumTasks) {
-			// Calculating maximum and minimum costs
-			c_min = apProfits[0][task];
-			c_max = apProfits[0][task];
-			for (int i=1; i<cdt.size(); i++) {
-				if (apProfits[cdt[i]][task] < c_min) {
-					c_min = apProfits[cdt[i]][task];
-				}
-				if (apProfits[cdt[i]][task] > c_max) {
-					c_max = apProfits[cdt[i]][task];
-				} 
-			}
-			// Calculating the threshold
-			threshold = c_min + alpha*(c_max - c_min);
-			// Add all candidates that are subject to
-			// inc_val(e) >= threshold
-			for (int e=0; e<cdt.size(); e++) {
-				if (apProfits[cdt[e]][task] >= threshold) {
-					lrc.push_back(cdt[e]);
-				}
-			}
-			// Select a pseudo-random element form LRC
-			if(0 == lrc.size()) break;
- 			sel = rand() % lrc.size();
-			if (sel < 0) sel = (-1)*sel;
-			// Update solution
-			apAssign[task] = lrc[sel];
-			// Update candidate list
-			task++;
-			cdt.clear();
-			lrc.clear();
-			cdt = GetCandidates(task);
-		}
-	}
-	cout << "Assignments: ";
-	ShowAssign();
-	cout << "Capacities: ";
-	for (int i=0; i<aNumAgts; i++) {
-		cout << CntCapacity(i) << " ";
-	}
-	cout << "\n\n";
-	return apAssign;
-}
-
-vector<int*> Gap::Neighbor (int *assignment, int task) {
-	srand(std::time(NULL));
-	vector<int*> neighbor;
-	vector<int> candidates;
-	int opt1 = assignment[task] ;
-	assignment[task] = -1;
-
-	for (int agnt=0; agnt<aNumAgts; agnt++) {
-		if (Allocate(agnt, task) && agnt != opt1) {
-			candidates.push_back(agnt);
-		}
-	}
-	
-	for (int i=0; i<candidates.size(); i++) {
-		neighbor.push_back(GetAssign());
-		neighbor[i][task] = candidates[i];
-	}
-
-	assignment[task] = opt1;
-	return neighbor;
-}
-
-int* Gap::LocalSearch (int *assignment) {
-	srand(std::time(NULL));
-	bool proceed             = true;
-	int local_min            = 0;
-	int task                 = rand() % aNumTasks;
-	vector<int*> my_neighbor = Neighbor(assignment, task);
-	return NULL;
-}
-
-int Gap::Grasp(int maxIteration, int seed){
-	for (int cnt_it=0; cnt_it < maxIteration; cnt_it++) {
-		apAssign = GreedyRandomizedConstruction(0.5, seed);
-		apAssign = LocalSearch(apAssign);
-		if(TotalProfit() > aMaxProfit) SetMaxProfit(TotalProfit());
-	}
-	return 0;
+	apCosts = readResource<int> (file, aNumAgts, aNumTasks);
+	apProfits = readCost<int> (file, aNumAgts, aNumTasks);
+	apCapacity = readAgentsCap<int> (file, aNumAgts, aNumTasks);
+	if (!apCosts || !apProfits || !apCapacity) {
+		cerr << "Could not read the file!\n";
+		return 1;
+	} else return 0;
 }
