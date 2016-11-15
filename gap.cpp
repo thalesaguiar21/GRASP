@@ -54,13 +54,10 @@ int Gap::Open () {
 
 bool Gap::Allocate (int agnt, int task) {
 	if (task < 0 || task > aNumTasks) {
-		//cerr << "Invalid task number!\n";
 		return false;
 	} else if (agnt < 0 || agnt > aNumAgts) {
-		//cerr << "Invalid agent number!\n";
 		return false;
 	} else if (CntCapacity(agnt) + apCosts[agnt][task] > apCapacity[agnt]) {
-		//cerr << "Agent " << agnt+1 << " can't exceed its capacity!\n";
 		return false;
 	} else 	return true;
 }
@@ -77,7 +74,7 @@ int Gap::CntCapacity (int agt) {
 
 void Gap::ResetAssignments () {
 	for (int tsk=0; tsk<aNumTasks; tsk++) {
-			apAssign[tsk] = -1;
+		apAssign[tsk] = -1;
 	}
 }
 
@@ -86,6 +83,7 @@ int Gap::Grasp(int maxIteration, int seed){
 	int best_profit = 0;
 
 	for (int cnt_it=0; cnt_it < maxIteration; cnt_it++) {
+		ResetAssignments();
 		apAssign = GreedyRandomizedConstruction(0.5, seed);
 		LocalSearch();
 		int profit_aux = TotalProfit();
@@ -107,15 +105,23 @@ int Gap::Grasp(int maxIteration, int seed){
 int* Gap::GreedyRandomizedConstruction (float alpha, int seed) {
 	vector<int> lrc;
 	vector<int> cdt;
+	vector<float> prob;
 	int sel          = 0;
 	int task         = 0;
 	float threshold  = 0;
 	int c_min        = 0;
 	int c_max        = 0;
+	float total      = 0.0;
+	float prob_e     = 0.0;
 	srand(seed);
 	//cout << "Construction fase...\n";
 	while (!IsASolution(apAssign)) {
-		task = 0;
+		task   = 0;
+		prob_e = 0.0;
+		total  = 0.0;
+		prob.clear();
+		cdt.clear();
+		lrc.clear();
 		ResetAssignments();
 		cdt = FindCandidates(0);
 		while (cdt.size() > 0 && task < aNumTasks) {
@@ -137,16 +143,29 @@ int* Gap::GreedyRandomizedConstruction (float alpha, int seed) {
 			for (int e=0; e<cdt.size(); e++) {
 				if (apProfits[cdt[e]][task] >= threshold) {
 					lrc.push_back(cdt[e]);
+					total += apProfits[cdt[e]][task];
 				}
 			}
 			// Select a pseudo-random element form LRC
-			if(0 == lrc.size()) break;
- 			sel = rand() % lrc.size();
-			if (sel < 0) sel = (-1)*sel;
+			if (0 == lrc.size()) break;
+			for (int i=0; i < lrc.size(); i++) {
+				prob_e += apProfits[lrc[i]][task] / total;
+				prob.push_back(prob_e * 100);
+			}
+			prob[prob.size()] = 100;
+ 			sel = rand() % 100;
 			// Update solution
-			apAssign[task] = lrc[sel];
+			for (int i=0; i < prob.size(); i++) {
+				if (sel <= prob[i]) {
+					apAssign[task] = lrc[i];
+ 					break;
+				}
+			}
 			// Update candidate list
 			task++;
+			prob_e = 0.0;
+			total = 0.0;
+			prob.clear();
 			cdt.clear();
 			lrc.clear();
 			cdt = FindCandidates(task);
@@ -172,15 +191,15 @@ int Gap::AgentCapacity (int agnt) {
 
 void Gap::LocalSearch () {
 	vector<int*> neighbors;
-	//cout << "Search fase...\n";
+	neighbors.clear();
+	cout << "Hey\n";
 	for (int tsk=0; tsk<aNumTasks; tsk++) {
 		neighbors = Neighbor(tsk);
+		cout << neighbors.size() << endl;
 		for (int i=0; i<neighbors.size(); i++) {
 			int neighSol = TotalProfit(neighbors[i]);
 			if (neighSol > TotalProfit()) {
-				for (int j=0; j<aNumTasks; j++) {
-					apAssign[j] = neighbors[i][j];
-				}
+				apAssign[tsk] = neighbors[i][tsk];
 			}
 		}
 
@@ -201,13 +220,9 @@ vector<int*> Gap::Neighbor (int task) {
 
 	for (int agnt=0; agnt<aNumAgts; agnt++) {
 		if (Allocate(agnt, task) && agnt != opt1) {
-			candidates.push_back(agnt);
+			neighbor.push_back(GetAssign());
+			neighbor[agnt][task] = agnt;
 		}
-	}
-	
-	for (int i=0; i<candidates.size(); i++) {
-		neighbor.push_back(GetAssign());
-		neighbor[i][task] = candidates[i];
 	}
 
 	apAssign[task] = opt1;

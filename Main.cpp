@@ -26,7 +26,9 @@ int main () {
 	}
 	cout << "\n\n";
 
-	gap->Grasp (1000, std::time(0));
+	//gap->GreedyRandomizedConstruction (0.5, std::time(0));
+	gap->Grasp (100, std::time(0));
+	cout << "Best profit: " << gap->TotalProfit() << endl;
 
 	delete gap;
 	delete[] aux;
