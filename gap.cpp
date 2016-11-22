@@ -2,7 +2,6 @@
 #include "ReaderWriter.h"
 #include <iostream>
 #include <iomanip>
-#include <sys/time.h>
 #include <chrono>
 #include <vector>
 
@@ -75,81 +74,31 @@ void Gap::ResetAssignments () {
 	}
 }
 
-int Gap::Grasp(int maxIteration){
+int* Gap::Grasp(int maxIteration, float alpha){
 	int *best_assign = NULL;
 	int best_profit  = 0;
-	int total_p      = 0;
-	int mediana_p    = 0.0;
-	int melhor_p     = 0;
-	int pior_p       = 0;
-
-	int total_t      = 0;
-	int mediana_t    = 0.0;
-	int melhor_t     = 0;
-	int pior_t       = 0;
-	struct timeval inicio, final;
-    int tmili;
 	unsigned seed1 = std::chrono::system_clock::now().time_since_epoch().count();
 	aRandGen.seed(seed1);
 
 	for (int cnt_it=0; cnt_it < maxIteration; cnt_it++) {
-		cout << cnt_it + 1 << "º iteration...\n";
 		ResetAssignments();
-		gettimeofday(&inicio, NULL);
-		apAssign = GreedyRandomizedConstruction(0.1);
-		gettimeofday(&final, NULL);
-		tmili = (int) (1000 * (final.tv_sec - inicio.tv_sec) + (final.tv_usec - inicio.tv_usec) / 1000);
-		/*LocalSearch();
-		cout << "Neighbor profit: " << TotalProfit(apAssign) << endl;
+		apAssign = GreedyRandomizedConstruction(alpha);
+		LocalSearch();
 		int profit_aux = TotalProfit(apAssign);
 		if(profit_aux > best_profit) {
 			best_profit = profit_aux;
 			best_assign = GetAssign();
 		}
-		cout << "Best profit: " << TotalProfit(best_assign) << endl;
-		cout << "Best assignment: ";
-		cout << "(";
-		for (int task=0; task<aNumTasks; task++) {
-			cout << best_assign[task] << ( (task == (aNumTasks-1) ) ? "" : ", " );
-		}
-		cout << ")\n\n";*/
-		int tmp = TotalProfit(apAssign);
-		total_p += TotalProfit();
-		if (melhor_p == 0) {
-			melhor_p = tmp;
-			pior_p = tmp;
-		} else {
-			if (melhor_p < tmp) {
-				melhor_p = tmp;
-			} 
-			if (pior_p > tmp) {
-				pior_p = tmp;
-			}
-		}
-
-		total_t += tmili;
-		if (melhor_t == 0) {
-			melhor_t = tmili;
-			pior_t = tmili;
-		} else {
-			if (melhor_t > tmili) {
-				melhor_t = tmili;
-			} 
-			if (pior_t < tmili) {
-				pior_t = tmili;
-			}
-		}
-		if (cnt_it == 5) {
-			mediana_p = tmp;
-			mediana_t = tmili;
-		}
 	}
+	/*cout << "Best profit: " << TotalProfit(best_assign) << endl;
+	cout << "Best assignment: ";
+	cout << "(";
+	for (int task=0; task<aNumTasks; task++) {
+		cout << best_assign[task] << ( (task == (aNumTasks-1) ) ? "" : ", " );
+	}
+	cout << ")\n\n";*/
 
-	cout << "     \t\tMelhor Media Mediana Pior\n";
-	cout << "Tempo\t\t" << melhor_t << " " << total_t / 15.0 << " " << mediana_t << " " << pior_t << endl;
-	cout << "Lucro\t\t" << melhor_p << " " << total_p / 15.0 << " " << mediana_p << " " << pior_p << endl;
-
-	return 0;
+	return best_assign;
 }
 
 int* Gap::GreedyRandomizedConstruction (float alpha) {
