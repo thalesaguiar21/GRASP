@@ -2,6 +2,7 @@
 #define GAP_H
 
 #include <vector>
+#include <random>
 
 using std::vector;
 
@@ -12,8 +13,8 @@ public:
 	Gap ();
 	~Gap ();
 	int           Open();
-	int           Grasp (int maxIteration, int seed);
-	int*          GreedyRandomizedConstruction (float alpha, int seed);	
+	int           Grasp (int maxIteration);
+	int*          GreedyRandomizedConstruction (float alpha);	
 	void          LocalSearch ();
 	vector<int*>  Neighbor (int task);
 	void          ShowAssign ();
@@ -28,13 +29,6 @@ public:
 	int*   GetCapacities ();
 	int**  GetCosts ();
 	int**  GetProfits ();
-	void   SetNumAgts (int numAgts);
-	void   SetNumTasks (int numTasks);
-	void   SetMaxProfit (int maxProfit);
-	void   SetCosts (int **costs);
-	void   SetProfits (int **profits);
-	void   SetCapacity (int *caps);
-	void   SetAssign (int *assign);
 
 private:
 
@@ -46,6 +40,7 @@ private:
 	int  **apProfits;
 	int  *apCapacity;
 	int  *apAssign;
+	std::mt19937 aRandGen;
 
 	int           ReadInput ();
 	bool          IsASolution (int *assignment);

@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <iomanip>
 #include <ctime>
+#include <chrono>
+#include <random>
 #include "gap.h"
 #include "ReaderWriter.h"
 
@@ -25,10 +27,8 @@ int main () {
 		cout << std::setfill(' ') << std::setw(3) << aux[i];
 	}
 	cout << "\n\n";
-
-	//gap->GreedyRandomizedConstruction (0.5, std::time(0));
-	gap->Grasp (100, std::time(0));
-	cout << "Best profit: " << gap->TotalProfit() << endl;
+	
+	gap->Grasp (15);
 
 	delete gap;
 	delete[] aux;
