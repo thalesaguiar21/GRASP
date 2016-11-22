@@ -37,9 +37,10 @@ int main () {
 		cout << std::setfill(' ') << std::setw(3) << aux[i];
 	}
 	cout << "\n\n";
+
 	for (int i=0; i<10; i++) {
 		gettimeofday(&inicio, NULL);
-		result = gap->Grasp (10, 0.1);
+		result = gap->ReactiveGrasp (10, 1.0);
 		gettimeofday(&final, NULL);
 		tmili = (int) (1000 * (final.tv_sec - inicio.tv_sec) + (final.tv_usec - inicio.tv_usec) / 1000);
 		int cnt_sol = gap->TotalProfit(result);

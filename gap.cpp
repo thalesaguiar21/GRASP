@@ -74,7 +74,7 @@ void Gap::ResetAssignments () {
 	}
 }
 
-int* Gap::Grasp(int maxIteration, float alpha){
+int* Gap::ReactiveGrasp(int maxIteration, float alpha){
 	int *best_assign = NULL;
 	int best_profit  = 0;
 	unsigned seed1 = std::chrono::system_clock::now().time_since_epoch().count();
@@ -82,7 +82,7 @@ int* Gap::Grasp(int maxIteration, float alpha){
 
 	for (int cnt_it=0; cnt_it < maxIteration; cnt_it++) {
 		ResetAssignments();
-		apAssign = GreedyRandomizedConstruction(alpha);
+		GreedyRandomizedConstruction(alpha);
 		LocalSearch();
 		int profit_aux = TotalProfit(apAssign);
 		if(profit_aux > best_profit) {
@@ -101,19 +101,22 @@ int* Gap::Grasp(int maxIteration, float alpha){
 	return best_assign;
 }
 
-int* Gap::GreedyRandomizedConstruction (float alpha) {
+void Gap::GreedyRandomizedConstruction (float alpha) {
 	vector<int> lrc;
 	vector<int> cdt;
+	if (alpha >= 1.0) alpha = 1.2;
 	int sel          = 0;
 	int task         = 0;
 	int c_min        = 0;
 	int c_max        = 0;
-	float threshold  = 0;
+	double threshold = 0;
 	
 	while (!IsASolution(apAssign)) {
+		if (alpha == 0.2) alpha = 0.0;
+		else alpha -= 0.2;
 		task = 0;
-		cdt  = FindCandidates(0);
 		ResetAssignments();
+		cdt = FindCandidates(0);
 		while (cdt.size() > 0 && task < aNumTasks) {
 			c_min = apProfits[0][task];
 			c_max = apProfits[0][task];
@@ -121,29 +124,30 @@ int* Gap::GreedyRandomizedConstruction (float alpha) {
 				if (apProfits[cdt[i]][task] < c_min) {
 					c_min = apProfits[cdt[i]][task];
 				}
-				if (apProfits[cdt[i]][task] > c_max) {
+				else if (apProfits[cdt[i]][task] > c_max) {
 					c_max = apProfits[cdt[i]][task];
 				} 
 			}
 			threshold = c_min + alpha*(c_max - c_min);
+			lrc.clear();
 			for (int e=0; e<cdt.size(); e++) {
-				if (apProfits[cdt[e]][task] >= threshold) {
+				double diference = apProfits[cdt[e]][task] - threshold;
+				if (diference < 0.0) diference *= -1;
+				if (diference >= 0.0) {
 					lrc.push_back(cdt[e]);
 				}
 			}
-			if (0 == lrc.size()) break;
+
  			sel = aRandGen() % lrc.size();
 			apAssign[task] = lrc[sel];
 
 			task++;
 			cdt.clear();
-			lrc.clear();
 			cdt = FindCandidates(task);
+			if (alpha < 1.0) alpha += 0.1;
 		}
 		cdt.clear();
-		lrc.clear();
 	}
-	return apAssign;
 }
 
 vector<int> Gap::FindCandidates (int task) {

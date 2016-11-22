@@ -13,8 +13,8 @@ public:
 	Gap ();
 	~Gap ();
 	int           Open();
-	int*          Grasp (int maxIteration, float alpha);
-	int*          GreedyRandomizedConstruction (float alpha);	
+	int*          ReactiveGrasp (int maxIteration, float alpha);
+	void          GreedyRandomizedConstruction (float alpha);	
 	void          LocalSearch ();
 	vector<int*>  Neighbor (int task);
 	void          ShowAssign ();
