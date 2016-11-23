@@ -17,7 +17,6 @@ Gap::Gap () {
 	aNumAgts        = 0;
 	aNumTasks       = 0;
 	aMaxProfit      = 0;
-	aVisitedNodes   = 0;
 	apCosts         = NULL;
 	apProfits       = NULL;
 	apCapacity      = NULL;
@@ -244,10 +243,6 @@ int Gap::GetNumTasks () {
 
 int Gap::GetMaxProfit () {
 	return aMaxProfit;
-}
-
-int Gap::GetVisitedNodes () {
-	return aVisitedNodes;
 }
 
 int* Gap::GetAssign () {
