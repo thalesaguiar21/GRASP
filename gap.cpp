@@ -4,6 +4,7 @@
 #include <iomanip>
 #include <chrono>
 #include <vector>
+#include <math.h>
 
 using std::cout;
 using std::cin;
@@ -104,22 +105,20 @@ int* Gap::ReactiveGrasp(int maxIteration, float alpha){
 void Gap::GreedyRandomizedConstruction (float alpha) {
 	vector<int> lrc;
 	vector<int> cdt;
-	if (alpha >= 1.0) alpha = 1.2;
+	alpha = 0.5;
 	int sel          = 0;
 	int task         = 0;
 	int c_min        = 0;
 	int c_max        = 0;
-	double threshold = 0;
-	
+	double threshold = 0.0;
+	double tolerance = 0.001;
 	while (!IsASolution(apAssign)) {
-		if (alpha == 0.2) alpha = 0.0;
-		else alpha -= 0.2;
 		task = 0;
 		ResetAssignments();
 		cdt = FindCandidates(0);
 		while (cdt.size() > 0 && task < aNumTasks) {
-			c_min = apProfits[0][task];
-			c_max = apProfits[0][task];
+			c_min = apProfits[cdt[0]][task];
+			c_max = apProfits[cdt[0]][task];
 			for (int i=1; i<cdt.size(); i++) {
 				if (apProfits[cdt[i]][task] < c_min) {
 					c_min = apProfits[cdt[i]][task];
@@ -132,21 +131,24 @@ void Gap::GreedyRandomizedConstruction (float alpha) {
 			lrc.clear();
 			for (int e=0; e<cdt.size(); e++) {
 				double diference = apProfits[cdt[e]][task] - threshold;
-				if (diference < 0.0) diference *= -1;
-				if (diference >= 0.0) {
+				if (diference >= 0.0 || abs(diference) < 0.0001) {
 					lrc.push_back(cdt[e]);
 				}
 			}
-
  			sel = aRandGen() % lrc.size();
 			apAssign[task] = lrc[sel];
-
+			if (task % 3 == 0) {
+				if (alpha < 1.0) alpha = alpha + 0.1;
+				else alpha = 1.0;
+			}
 			task++;
 			cdt.clear();
 			cdt = FindCandidates(task);
-			if (alpha < 1.0) alpha += 0.1;
 		}
 		cdt.clear();
+		double decrement = (aRandGen() % 11) / 10.0;
+		if(alpha <= decrement) alpha = 0.0;
+		else alpha = alpha - decrement;
 	}
 }
 

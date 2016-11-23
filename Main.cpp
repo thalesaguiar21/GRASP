@@ -40,7 +40,7 @@ int main () {
 
 	for (int i=0; i<10; i++) {
 		gettimeofday(&inicio, NULL);
-		result = gap->ReactiveGrasp (10, 1.0);
+		result = gap->ReactiveGrasp (37, 1.0);
 		gettimeofday(&final, NULL);
 		tmili = (int) (1000 * (final.tv_sec - inicio.tv_sec) + (final.tv_usec - inicio.tv_usec) / 1000);
 		int cnt_sol = gap->TotalProfit(result);
@@ -53,12 +53,13 @@ int main () {
 		solTotal += cnt_sol;
 		tempoTotal += tmili;
 	}
-	cout << "Solução máxima: " << solMax << endl;
-	cout << "Solução média: " << solTotal / 10.0 << endl;
-	cout << "Solução mínima: " << solMin << endl;
-	cout << "Tempo máximo: " << tempoMax << endl;
-	cout << "Tempo médio: " << tempoTotal / 10.0 << endl;
-	cout << "Tempo mínimo: " << tempoMin << endl;
+	cout << "Solução máxima, Solução média, Solução mínima, Tempo máximo, Tempo médio, Tempo mínimo.\n";
+	cout << solMax;
+	cout << "," << solTotal / 10.0;
+	cout << "," << solMin;
+	cout << "," << tempoMax;
+	cout << "," << tempoTotal / 10.0;
+	cout << "," << tempoMin << endl;
 
 	delete[] result;
 	delete gap;
