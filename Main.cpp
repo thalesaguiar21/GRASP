@@ -38,7 +38,7 @@ int main () {
 	}
 	cout << "\n\n";
 
-	for (int i=0; i<1; i++) {
+	for (int i=0; i<5; i++) {
 		gettimeofday(&inicio, NULL);
 		result = gap->ReactiveGrasp (2, 1.0);
 		gettimeofday(&final, NULL);
