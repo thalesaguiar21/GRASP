@@ -18,6 +18,8 @@ int main () {
 	if (0 != gap->Open()) exit(1);
 	struct timeval inicio, final;
     int tmili;
+    float alpha = 0.0;
+    int maxit = 0;
     float tempoMin = 0.0;
     float solMin = 0.0;
     float tempoMax = 0.0;
@@ -38,7 +40,12 @@ int main () {
 	}
 	cout << "\n\n";
 
-	for (int i=0; i<5; i++) {
+	cout << "Digite o número máximo de iterações do rGRASP: \n";
+	cin >> maxit;
+	cout << "Digite um valor inicial para o parâmetro alpha:\n";
+	cin >> alpha;
+	result = gap->ReactiveGrasp (maxit, alpha);
+	/*for (int i=0; i<5; i++) {
 		gettimeofday(&inicio, NULL);
 		result = gap->ReactiveGrasp (2, 1.0);
 		gettimeofday(&final, NULL);
@@ -59,7 +66,7 @@ int main () {
 	cout << "," << solMin;
 	cout << "," << tempoMax;
 	cout << "," << tempoTotal / 10.0;
-	cout << "," << tempoMin << endl;
+	cout << "," << tempoMin << endl;*/
 
 	delete[] result;
 	delete gap;

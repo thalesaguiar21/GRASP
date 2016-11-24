@@ -90,13 +90,13 @@ int* Gap::ReactiveGrasp(int maxIteration, float alpha){
 			best_assign = GetAssign();
 		}
 	}
-	/*cout << "Best profit: " << TotalProfit(best_assign) << endl;
-	cout << "Best assignment: ";
+	cout << "\nMelhor lucro: " << TotalProfit(best_assign) << endl;
+	cout << "Melhor alocação: ";
 	cout << "(";
 	for (int task=0; task<aNumTasks; task++) {
 		cout << best_assign[task] << ( (task == (aNumTasks-1) ) ? "" : ", " );
 	}
-	cout << ")\n\n";*/
+	cout << ")\n";
 
 	return best_assign;
 }
@@ -104,7 +104,6 @@ int* Gap::ReactiveGrasp(int maxIteration, float alpha){
 void Gap::GreedyRandomizedConstruction (float alpha) {
 	vector<int> lrc;
 	vector<int> cdt;
-	alpha = 0.5;
 	int sel          = 0;
 	int task         = 0;
 	int c_min        = 0;
